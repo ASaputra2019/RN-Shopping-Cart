@@ -19,7 +19,7 @@ const ProductItem = props => {
           </View>
           <View style={styles.action}>
             <Button color={Colors.primary} title="View Details" onPress={props.onViewDetail} />
-            <Button color={Colors.primary} title="Go to Cart" onPress={props.onAddToCart} />
+            <Button color={Colors.primary} title="Add to Cart" onPress={props.onAddToCart} />
           </View>
         </View>
       </Touchable>
