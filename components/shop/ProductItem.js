@@ -1,35 +1,48 @@
 import React from 'react';
-import { StyleSheet, Text, View, Image, Button } from 'react-native';
+import { StyleSheet, Text, View, Image, Button, TouchableOpacity, TouchableNativeFeedback, Platform } from 'react-native';
 
 import Colors from '../../constants/Colors';
 
 const ProductItem = props => {
-  return <View style={styles.product}>
-    <View style={styles.imgContainer}>
-      <Image source={{ uri: props.image }} style={styles.image} />
+  const Touchable = Platform.OS === 'android' && Platform.Version >= 21 ? TouchableNativeFeedback : TouchableOpacity
+
+  return (
+    <View style={styles.product}>
+      <Touchable onPress={props.onViewDetail} useForeground>
+        <View style={styles.touchable}>
+          <View style={styles.imgContainer}>
+            <Image source={{ uri: props.image }} style={styles.image} />
+          </View>
+          <View style={styles.details}>
+            <Text style={styles.title} >{props.title}</Text>
+            <Text style={styles.price} >$ {props.price.toFixed(2)}</Text>
+          </View>
+          <View style={styles.action}>
+            <Button color={Colors.primary} title="View Details" onPress={props.onViewDetail} />
+            <Button color={Colors.primary} title="Go to Cart" onPress={props.onAddToCart} />
+          </View>
+        </View>
+      </Touchable>
     </View>
-    <View style={styles.details}>
-      <Text style={styles.title} >{props.title}</Text>
-      <Text style={styles.price} >$ {props.price.toFixed(2)}</Text>
-    </View>
-    <View style={styles.action}>
-      <Button color={Colors.primary} title="View Details" onPress={props.onViewDetail}/>
-      <Button color={Colors.primary} title="Go to Cart" onPress={props.onAddToCart}/>
-    </View>
-  </View>
+  );
 };
 
-const styles= StyleSheet.create({
+const styles = StyleSheet.create({
   product: {
     shadowColor: 'black',
     shadowOpacity: 0.3,
-    shadowOffset: { width:0, height:2 },
+    shadowOffset: { width: 0, height: 2 },
     shadowRadius: 8,
     elevation: 8,
     borderRadius: 10,
     backgroundColor: 'white',
     height: 300,
-    margin: 20
+    margin: 20,
+    overflow: 'hidden'
+  },
+  touchable: {
+    borderRadius: 10,
+    overflow: 'hidden'
   },
   imgContainer: {
     width: '100%',
