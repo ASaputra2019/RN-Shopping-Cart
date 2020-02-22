@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FlatList, Platform, Button, Alert } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { HeaderButtons, Item } from 'react-navigation-header-buttons';
@@ -10,6 +10,7 @@ import Colors from '../../constants/Colors';
 
 
 const UserProductScreen = props => {
+  
   const userProducts = useSelector(state => state.products.userProducts)
   const dispatch = useDispatch();
   const editProductHandler = id => {

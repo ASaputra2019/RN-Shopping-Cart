@@ -1,17 +1,41 @@
-import React from 'react';
-import { FlatList, Button, Platform } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { StyleSheet, FlatList, View, Text, Button, Platform, ActivityIndicator } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { HeaderButtons, Item } from 'react-navigation-header-buttons';
 
 import HeaderButton from '../../components/UI/HeaderButton';
 import ProductItem from '../../components/shop/ProductItem';
 import * as cartActions from '../../store/actions/cart';
+import * as productsActions from '../../store/actions/products';
 import Colors from '../../constants/Colors';
 
 
 const ProductsOverviewScreen = props => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState();
   const products = useSelector(state => state.products.availableProducts);
   const dispatch = useDispatch();
+  // console.log("hello")
+  const loadProducts = useCallback(async () => {
+    setLoading(true);
+    try {
+      await dispatch(productsActions.fetchProducts());
+    } catch (error) {
+      setError(error.message);
+    }
+    setLoading(false);
+  }, [dispatch, setLoading, setError]);
+
+  useEffect(() => {
+    const listener = props.navigation.addListener('willFocus', loadProducts);
+    return () => {
+      listener.remove();
+    }
+  }, [loadProducts]);
+
+  useEffect(() => {
+    loadProducts();
+  }, [dispatch, loadProducts]);
 
   const selectItemHandler = (id, title) => {
     props.navigation.navigate('ProductDetail', {
@@ -19,6 +43,23 @@ const ProductsOverviewScreen = props => {
       productTitle: title
     });
   };
+
+  if (error) {
+    return (<View style={styles.centered}>
+      <Text>{error}</Text>
+      <Button title='Reload' onPress={loadProducts} color={Colors.primary} />
+    </View>);
+  }
+  if (loading) {
+    return (<View style={styles.centered}>
+      <ActivityIndicator size='large' color={Colors.accent} />
+    </View>)
+  }
+  if (!loading && products.length === 0) {
+    return (<View style={styles.centered}>
+      <Text>No products yet, try adding some.</Text>
+    </View>);
+  }
 
   return <FlatList
     data={products}
@@ -44,7 +85,7 @@ const ProductsOverviewScreen = props => {
         onPress={() => {
           dispatch(cartActions.addToCart(
             itemData.item
-          ));  
+          ));
         }}
       />
     </ProductItem>}
@@ -53,25 +94,37 @@ const ProductsOverviewScreen = props => {
 ProductsOverviewScreen.navigationOptions = navData => {
   return {
     headerTitle: 'All Products',
-    headerLeft: () => <HeaderButtons HeaderButtonComponent={HeaderButton} >
-      <Item
-        title='Menu'
-        iconName={Platform.OS === 'android' ? 'md-menu' : 'ios-menu'}
-        onPress={() => {
-          navData.navigation.toggleDrawer()
-        }}
-      />
-    </HeaderButtons>,
-    headerRight: () => <HeaderButtons HeaderButtonComponent={HeaderButton} >
-      <Item
-        title='Cart'
-        iconName={Platform.OS === 'android' ? 'md-cart' : 'ios-cart'}
-        onPress={() => {
-          navData.navigation.navigate('Cart')
-        }}
-      />
-    </HeaderButtons>
+    headerLeft: () => (
+      <HeaderButtons HeaderButtonComponent={HeaderButton} >
+        <Item
+          title='Menu'
+          iconName={Platform.OS === 'android' ? 'md-menu' : 'ios-menu'}
+          onPress={() => {
+            navData.navigation.toggleDrawer()
+          }}
+        />
+      </HeaderButtons>
+    ),
+    headerRight: () => (
+      <HeaderButtons HeaderButtonComponent={HeaderButton} >
+        <Item
+          title='Cart'
+          iconName={Platform.OS === 'android' ? 'md-cart' : 'ios-cart'}
+          onPress={() => {
+            navData.navigation.navigate('Cart')
+          }}
+        />
+      </HeaderButtons>
+    )
   };
-}
+};
+
+const styles = StyleSheet.create({
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
+  }
+})
 
 export default ProductsOverviewScreen;
