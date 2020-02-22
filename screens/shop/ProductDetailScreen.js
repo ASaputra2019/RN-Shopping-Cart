@@ -2,7 +2,6 @@ import React from 'react';
 import { StyleSheet, Text, View, ScrollView, Image, Button } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 
-import ProductItem from '../../components/shop/ProductItem';
 import Colors from '../../constants/Colors';
 import * as cartActions from '../../store/actions/cart';
 
