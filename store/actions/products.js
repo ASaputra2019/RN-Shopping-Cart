@@ -36,7 +36,7 @@ export const fetchProducts = () => {
 
 export const deleteProduct = productId => {
   return async (dispatch) => {
-    const response = await fetch(`https://rn-shopping-cart-fc84d.firebaseio.com/products/${productId}.jon`, {
+    const response = await fetch(`https://rn-shopping-cart-fc84d.firebaseio.com/products/${productId}.json`, {
       method: 'DELETE',
     });
     if (!response.ok) {
