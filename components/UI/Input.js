@@ -25,17 +25,18 @@ const inputReducer = (state, action) => {
 
 const Input = props => {
   const { onInputChange, id, initiallyValid, initialValue, min, max, minLength, required, label, errorMessage } = props
-  
   const [inputState, dispatch] = useReducer(inputReducer, {
     value: initialValue ? initialValue : '',
     isValid: initiallyValid,
     touched: false
   });
+  
+  useEffect(() => {
+    dispatch({ type: INPUT_CHANGE, value: initialValue, isValid: true });
+  }, [initialValue]);
 
   useEffect(() => {
-    // if(inputState.touched) {
-      onInputChange(id, inputState.value, inputState.isValid)
-    // }
+    onInputChange(id, inputState.value, inputState.isValid)
   }, [inputState, onInputChange, id]);
 
   const textChangeHandler = (text) => {

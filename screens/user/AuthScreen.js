@@ -1,5 +1,5 @@
 import React, { useState, useReducer, useCallback, useEffect } from 'react';
-import { View, Button, StyleSheet, KeyboardAvoidingView, ScrollView, ActivityIndicator, Alert, Keyboard, TouchableWithoutFeedback } from 'react-native';
+import { View, Button, StyleSheet, KeyboardAvoidingView, ScrollView, ActivityIndicator, Alert, AsyncStorage } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useDispatch } from 'react-redux';
 
@@ -35,11 +35,13 @@ const formReducer = (state, action) => {
 };
 
 const AuthScreen = props => {
+  const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const [formHasSubmitted, setFormHasSubmitted] = useState(false)
   const [error, setError] = useState();
-  const dispatch = useDispatch();
   const [signUpMode, setSignUpMode] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [formState, dispatchFormState] = useReducer(formReducer, {
     inputValues: {
       email: '',
@@ -81,10 +83,19 @@ const AuthScreen = props => {
   };
 
   useEffect(() => {
+    const wrapper = async () => {
+      const lastUser = await AsyncStorage.getItem('lastUser');
+      if (!!lastUser) {
+        setEmail(JSON.parse(lastUser).email);
+        setPassword(JSON.parse(lastUser).password);
+      }
+    };
+    wrapper();
+
     if (error) {
       Alert.alert("ERROR", error, [{ text: 'OK' }])
     }
-  }, [error]);
+  }, [error, email, password]);
 
   const inputChangeHandler = useCallback((inputIdentifier, inputValue, inputValidity) => {
     dispatchFormState({
@@ -115,7 +126,7 @@ const AuthScreen = props => {
             autoCapitalize="none"
             errorMessage="Please enter a valid email address."
             onInputChange={inputChangeHandler}
-            initialValue=""
+            initialValue={email}
             formHasSubmitted={formHasSubmitted}
           />
           <Input
@@ -127,7 +138,7 @@ const AuthScreen = props => {
             minLength={6}
             errorMessage="Please enter a valid password."
             onInputChange={inputChangeHandler}
-            initialValue=""
+            initialValue={password}
             formHasSubmitted={formHasSubmitted}
           />
           <View style={styles.button}>

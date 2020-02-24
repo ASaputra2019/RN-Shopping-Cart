@@ -49,6 +49,11 @@ export const signUp = (email, password) => {
     //   userId: resData.localId
     // });
     dispatch(authenticate(resData.localId, resData.idToken, parseInt(resData.expiresIn) * 1000));
+
+    AsyncStorage.setItem('lastUser', JSON.stringify({
+      email,
+      password
+    }));
     const expirationDate = new Date(new Date().getTime() + parseInt(resData.expiresIn) * 1000);
     saveUserDataToStorage(resData.idToken, resData.localId, expirationDate);
   }
@@ -85,6 +90,10 @@ export const logIn = (email, password) => {
     // });
     dispatch(authenticate(resData.localId, resData.idToken, parseInt(resData.expiresIn) * 1000));
 
+    AsyncStorage.setItem('lastUser', JSON.stringify({
+      email,
+      password
+    }));
     const expirationDate = new Date(new Date().getTime() + parseInt(resData.expiresIn) * 1000);
     saveUserDataToStorage(resData.idToken, resData.localId, expirationDate);
   };
@@ -97,7 +106,7 @@ export const logOut = () => {
 };
 
 const clearLougoutTimer = () => {
-  if(timer) clearTimeout(timer);
+  if (timer) clearTimeout(timer);
 };
 
 const setLogoutTimer = expirationTime => {
