@@ -6,7 +6,8 @@ export const UPDATE_PRODUCT = 'UPDATE_PRODUCT';
 export const SET_PRODUCTS = 'SET_PRODUCTS';
 
 export const fetchProducts = () => {
-  return async (dispatch) => {
+  return async (dispatch, getState) => {
+    let userId = getState().auth.userId;
     try {
       const response = await fetch('https://rn-shopping-cart-fc84d.firebaseio.com/products.json', {
         method: 'GET',
@@ -19,14 +20,14 @@ export const fetchProducts = () => {
       for (let key in resData) {
         loadedProducts.push(new Product(
           key,
-          'u1',
+          resData[key].ownerId,
           resData[key].title,
           resData[key].imageUrl,
           resData[key].description,
           resData[key].price
         ))
       }
-      dispatch({ type: SET_PRODUCTS, products: loadedProducts })
+      dispatch({ type: SET_PRODUCTS, products: loadedProducts, userProducts: loadedProducts.filter(lp => lp.ownerId === userId) })
     } catch (err) {
       // send to custom analytic server
       throw err;
@@ -35,8 +36,9 @@ export const fetchProducts = () => {
 };
 
 export const deleteProduct = productId => {
-  return async (dispatch) => {
-    const response = await fetch(`https://rn-shopping-cart-fc84d.firebaseio.com/products/${productId}.json`, {
+  return async (dispatch, getState) => {
+    let token = getState().auth.token;
+    const response = await fetch(`https://rn-shopping-cart-fc84d.firebaseio.com/products/${productId}.json?auth=${token}`, {
       method: 'DELETE',
     });
     if (!response.ok) {
@@ -51,8 +53,10 @@ export const deleteProduct = productId => {
 };
 
 export const createProduct = (title, description, imageUrl, price) => {
-  return async (dispatch) => { //redux thunk dispatch before setting a state
-    const response = await fetch('https://rn-shopping-cart-fc84d.firebaseio.com/products.json', {
+  return async (dispatch, getState) => { //redux thunk dispatch before setting a state
+    let token = getState().auth.token;
+    let userId = getState().auth.userId;
+    const response = await fetch(`https://rn-shopping-cart-fc84d.firebaseio.com/products.json?auth=${token}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json' // so that firebase know we'd send a json data
@@ -61,7 +65,8 @@ export const createProduct = (title, description, imageUrl, price) => {
         title,
         description,
         imageUrl,
-        price
+        price,
+        ownerId: userId
       })
     })
     // .then(resp => {}) // replaced with async await
@@ -75,15 +80,17 @@ export const createProduct = (title, description, imageUrl, price) => {
         title,
         description,
         imageUrl,
-        price
+        price,
+        ownerId: userId
       }
     });
   };
 };
 
 export const updateProduct = (id, title, description, imageUrl) => {
-  return async (dispatch) => {
-    const response = await fetch(`https://rn-shopping-cart-fc84d.firebaseio.com/products/${id}.json`, {
+  return async (dispatch, getState) => {
+    let token = getState().auth.token;
+    const response = await fetch(`https://rn-shopping-cart-fc84d.firebaseio.com/products/${id}.json?auth=${token}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json'

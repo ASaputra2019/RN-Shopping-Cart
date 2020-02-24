@@ -8,22 +8,25 @@ import ProductItem from '../../components/shop/ProductItem';
 import * as cartActions from '../../store/actions/cart';
 import * as productsActions from '../../store/actions/products';
 import Colors from '../../constants/Colors';
+import { isLoading } from 'expo-font';
 
 
 const ProductsOverviewScreen = props => {
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState();
   const products = useSelector(state => state.products.availableProducts);
   const dispatch = useDispatch();
-  // console.log("hello")
+
   const loadProducts = useCallback(async () => {
-    setLoading(true);
+    setError(null);
+    setRefreshing(true);
     try {
       await dispatch(productsActions.fetchProducts());
     } catch (error) {
       setError(error.message);
     }
-    setLoading(false);
+    setRefreshing(false);
   }, [dispatch, setLoading, setError]);
 
   useEffect(() => {
@@ -34,7 +37,11 @@ const ProductsOverviewScreen = props => {
   }, [loadProducts]);
 
   useEffect(() => {
-    loadProducts();
+    setLoading(true);
+    loadProducts()
+    .then(() => {
+      setLoading(false);
+    });
   }, [dispatch, loadProducts]);
 
   const selectItemHandler = (id, title) => {
@@ -61,35 +68,39 @@ const ProductsOverviewScreen = props => {
     </View>);
   }
 
-  return <FlatList
-    data={products}
-    keyExtractor={item => item.id}
-    renderItem={itemData => <ProductItem
-      image={itemData.item.imageUrl}
-      title={itemData.item.title}
-      price={itemData.item.price}
-      onSelect={() => {
-        selectItemHandler(itemData.item.id, itemData.item.title)
-      }}
-    >
-      <Button
-        color={Colors.primary}
-        title="View Details"
-        onPress={() => {
+  return (
+    <FlatList
+      onRefresh={loadProducts}
+      refreshing={refreshing}
+      data={products}
+      keyExtractor={item => item.id}
+      renderItem={itemData => <ProductItem
+        image={itemData.item.imageUrl}
+        title={itemData.item.title}
+        price={itemData.item.price}
+        onSelect={() => {
           selectItemHandler(itemData.item.id, itemData.item.title)
         }}
-      />
-      <Button
-        color={Colors.primary}
-        title="Add to Cart"
-        onPress={() => {
-          dispatch(cartActions.addToCart(
-            itemData.item
-          ));
-        }}
-      />
-    </ProductItem>}
-  />;
+      >
+        <Button
+          color={Colors.primary}
+          title="View Details"
+          onPress={() => {
+            selectItemHandler(itemData.item.id, itemData.item.title)
+          }}
+        />
+        <Button
+          color={Colors.primary}
+          title="Add to Cart"
+          onPress={() => {
+            dispatch(cartActions.addToCart(
+              itemData.item
+            ));
+          }}
+        />
+      </ProductItem>}
+    />
+  );
 };
 ProductsOverviewScreen.navigationOptions = navData => {
   return {

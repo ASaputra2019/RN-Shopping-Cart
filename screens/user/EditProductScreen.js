@@ -108,7 +108,7 @@ const EditProductScreen = props => {
       type: FORM_UPDATE,
       input: inputIdentifier,
       value: inputValue,
-      isValid: inputValue,
+      isValid: inputValidity,
     });
   }, [dispatchFormState]);
 
