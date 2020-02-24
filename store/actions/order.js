@@ -10,7 +10,7 @@ export const fetchOrders = () => {
   return async (dispatch, getState) => {
     let userId = getState().auth.userId;
     try {
-      const response = await fetch(`https://rn-shopping-cart-fc84d.firebaseio.com/orders/${userId}.json`, {
+      const response = await fetch(`https://rn-shopping-cart-as.firebaseio.com/orders/${userId}.json`, {
         method: 'GET',
       });
       if (!response.ok) { // to forware into catch in case of 400 or 500 status code
@@ -43,7 +43,7 @@ export const addOrder = (cartItems, totalAmount) => {
     let token = getState().auth.token;
     let userId = getState().auth.userId;
     const date = new Date();
-    const response = await fetch(`https://rn-shopping-cart-fc84d.firebaseio.com/orders/${userId}.json?auth=${token}`,
+    const response = await fetch(`https://rn-shopping-cart-as.firebaseio.com/orders/${userId}.json?auth=${token}`,
       {
         method: 'POST',
         headers: {

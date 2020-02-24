@@ -9,10 +9,12 @@ export const fetchProducts = () => {
   return async (dispatch, getState) => {
     let userId = getState().auth.userId;
     try {
-      const response = await fetch('https://rn-shopping-cart-fc84d.firebaseio.com/products.json', {
+      const response = await fetch('https://rn-shopping-cart-as.firebaseio.com/products.json', {
         method: 'GET',
       });
       if (!response.ok) { // to forware into catch in case of 400 or 500 status code
+        let resData = response.json();
+        console.log(resData);
         throw new Error('Something went wrong with get request');
       }
       const resData = await response.json();
@@ -38,7 +40,7 @@ export const fetchProducts = () => {
 export const deleteProduct = productId => {
   return async (dispatch, getState) => {
     let token = getState().auth.token;
-    const response = await fetch(`https://rn-shopping-cart-fc84d.firebaseio.com/products/${productId}.json?auth=${token}`, {
+    const response = await fetch(`https://rn-shopping-cart-as.firebaseio.com/${productId}.json?auth=${token}`, {
       method: 'DELETE',
     });
     if (!response.ok) {
@@ -56,7 +58,7 @@ export const createProduct = (title, description, imageUrl, price) => {
   return async (dispatch, getState) => { //redux thunk dispatch before setting a state
     let token = getState().auth.token;
     let userId = getState().auth.userId;
-    const response = await fetch(`https://rn-shopping-cart-fc84d.firebaseio.com/products.json?auth=${token}`, {
+    const response = await fetch(`https://rn-shopping-cart-as.firebaseio.com/products.json?auth=${token}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json' // so that firebase know we'd send a json data
@@ -90,7 +92,7 @@ export const createProduct = (title, description, imageUrl, price) => {
 export const updateProduct = (id, title, description, imageUrl) => {
   return async (dispatch, getState) => {
     let token = getState().auth.token;
-    const response = await fetch(`https://rn-shopping-cart-fc84d.firebaseio.com/products/${id}.json?auth=${token}`, {
+    const response = await fetch(`https://rn-shopping-cart-as.firebaseio.com/${id}.json?auth=${token}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json'
