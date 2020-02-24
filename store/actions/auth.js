@@ -1,9 +1,13 @@
+import { AsyncStorage } from 'react-native';
+
+import serverKey from '../../key/key';
+
 export const SIGN_UP = 'SIGN_UP';
 export const LOG_IN = 'LOG_IN';
 
 export const signUp = (email, password) => {
   return async (dispatch) => {
-    const response = await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyDJgC8jCetiw0sLQTkAZENqNgQvqWRyuDs', {
+    const response = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${serverKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -35,7 +39,7 @@ export const signUp = (email, password) => {
 
 export const logIn = (email, password) => {
   return async (dispatch) => {
-    const response = await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyDJgC8jCetiw0sLQTkAZENqNgQvqWRyuDs', {
+    const response = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${serverKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -61,6 +65,14 @@ export const logIn = (email, password) => {
       type: LOG_IN,
       token: resData.idToken,
       userId: resData.localId
-    })
-  }
+    });
+    saveUserDataToStorage(resData.idToken, resData.localId);
+  };
+};
+
+const saveUserDataToStorage = (token, userId) => {
+  AsyncStorage.setItem('userData', JSON.stringify({
+    token,
+    userId
+  }));
 };
