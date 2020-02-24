@@ -2,8 +2,17 @@ import { AsyncStorage } from 'react-native';
 
 import serverKey from '../../key/key';
 
-export const SIGN_UP = 'SIGN_UP';
-export const LOG_IN = 'LOG_IN';
+
+export const AUTHENTICATE = 'AUTHENTICATE';
+export const LOG_OUT = 'LOG_OUT';
+
+export const authenticate = (userId, token) => {
+  return {
+    type: AUTHENTICATE,
+    token,
+    userId
+  }
+}
 
 export const signUp = (email, password) => {
   return async (dispatch) => {
@@ -29,11 +38,14 @@ export const signUp = (email, password) => {
       throw new Error(errorMessage);
     }
     const resData = await response.json();
-    dispatch({
-      type: SIGN_UP,
-      token: resData.idToken,
-      userId: resData.localId
-    })
+    // dispatch({
+    //   type: SIGN_UP,
+    //   token: resData.idToken,
+    //   userId: resData.localId
+    // });
+    dispatch(authenticate(resData.localId, resData.idToken));
+    const expirationDate = new Date(new Date().getTime() + parseInt(resData.expiresIn) * 1000);
+    saveUserDataToStorage(resData.idToken, resData.localId, expirationDate);
   }
 };
 
@@ -61,18 +73,28 @@ export const logIn = (email, password) => {
       throw new Error(errorMessage);
     }
     const resData = await response.json();
-    dispatch({
-      type: LOG_IN,
-      token: resData.idToken,
-      userId: resData.localId
-    });
-    saveUserDataToStorage(resData.idToken, resData.localId);
+    // dispatch({
+    //   type: LOG_IN,
+    //   token: resData.idToken,
+    //   userId: resData.localId
+    // });
+    dispatch(authenticate(resData.localId, resData.idToken));
+
+    const expirationDate = new Date(new Date().getTime() + parseInt(resData.expiresIn) * 1000);
+    saveUserDataToStorage(resData.idToken, resData.localId, expirationDate);
   };
 };
 
-const saveUserDataToStorage = (token, userId) => {
+const saveUserDataToStorage = (token, userId, expirationDate) => {
   AsyncStorage.setItem('userData', JSON.stringify({
     token,
-    userId
+    userId,
+    expireDate: expirationDate.toISOString()
   }));
+};
+
+export const logOut = () => {
+  return {
+    type: LOG_OUT
+  };
 };
