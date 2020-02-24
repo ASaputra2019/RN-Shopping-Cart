@@ -5,13 +5,18 @@ import serverKey from '../../key/key';
 
 export const AUTHENTICATE = 'AUTHENTICATE';
 export const LOG_OUT = 'LOG_OUT';
+let timer;
 
-export const authenticate = (userId, token) => {
-  return {
-    type: AUTHENTICATE,
-    token,
-    userId
-  }
+export const authenticate = (userId, token, expirationTime) => {
+  return (dispatch) => {
+
+    dispatch(setLogoutTimer(expirationTime));
+    dispatch({
+      type: AUTHENTICATE,
+      token,
+      userId
+    });
+  };
 }
 
 export const signUp = (email, password) => {
@@ -43,7 +48,7 @@ export const signUp = (email, password) => {
     //   token: resData.idToken,
     //   userId: resData.localId
     // });
-    dispatch(authenticate(resData.localId, resData.idToken));
+    dispatch(authenticate(resData.localId, resData.idToken, parseInt(resData.expiresIn) * 1000));
     const expirationDate = new Date(new Date().getTime() + parseInt(resData.expiresIn) * 1000);
     saveUserDataToStorage(resData.idToken, resData.localId, expirationDate);
   }
@@ -78,12 +83,30 @@ export const logIn = (email, password) => {
     //   token: resData.idToken,
     //   userId: resData.localId
     // });
-    dispatch(authenticate(resData.localId, resData.idToken));
+    dispatch(authenticate(resData.localId, resData.idToken, parseInt(resData.expiresIn) * 1000));
 
     const expirationDate = new Date(new Date().getTime() + parseInt(resData.expiresIn) * 1000);
     saveUserDataToStorage(resData.idToken, resData.localId, expirationDate);
   };
 };
+
+export const logOut = () => {
+  clearLougoutTimer();
+  AsyncStorage.removeItem('userData');
+  return { type: LOG_OUT };
+};
+
+const clearLougoutTimer = () => {
+  if(timer) clearTimeout(timer);
+};
+
+const setLogoutTimer = expirationTime => {
+  return (dispatch) => {
+    timer = setTimeout(() => {
+      dispatch(logOut());
+    }, expirationTime);
+  }
+}
 
 const saveUserDataToStorage = (token, userId, expirationDate) => {
   AsyncStorage.setItem('userData', JSON.stringify({
@@ -91,10 +114,4 @@ const saveUserDataToStorage = (token, userId, expirationDate) => {
     userId,
     expireDate: expirationDate.toISOString()
   }));
-};
-
-export const logOut = () => {
-  return {
-    type: LOG_OUT
-  };
 };
